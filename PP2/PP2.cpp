@@ -1,50 +1,41 @@
-#include <iostream>
+﻿#include <iostream>
 #include <cmath>
 #include <iomanip>
 #include <vector>
 
 // Структура, хранящая в себе результаты вычислений на определнной итерации
-struct result {
-    long double An = 0;
-    long double Sn = 0;
-    long double En = 0;
-    long double tempAn = 0;
-};
+struct iteration { long double An = 0, Sn = 0, En = 0, tempAn = 0; };
 
-// Функция, отвечающая за ввод и проверку на корректность параметра x
-// Возвращает параметр x, в случае если он корректный, иначе - просит ввести другое значение
-double xParameterValidation() {
+double getParameterX() {
+    std::cout << "Enter parameter x: ";
     double x;
-    std::cin >> x;
-    if (x < -1 || x >= 1 || std::cin.fail() || std::cin.bad() || std::cin.peek() != '\n') {
-        std::cout << "Incorrect parameter x, please enter another one: ";
-        std::cin.clear(); // Возвращение потока ввода в начальное состояние
-        std::cin.ignore(32767, '\n'); // Очистка потока ввода
-        xParameterValidation();
+    bool check = true;
+    while (check) {
+        std::cin >> x;
+        if (x < -1 || x >= 1 || std::cin.fail() || std::cin.bad() || std::cin.peek() != '\n') {
+            std::cout << "Incorrect parameter x, please enter another one: ";
+            std::cin.clear(); // Возвращение потока ввода в начальное состояние
+            std::cin.ignore(32767, '\n'); // Очистка потока ввода
+        }
+        else check = false;
     }
-    else {
-        std::cin.clear();
-        std::cin.ignore(32767, '\n');
-        return x;
-    }
+    return x;
 }
 
-// Функция, отвечающая за ввод и проверку на корректность параметра a
-// Возвращает параметр а, в случае если он корректный, иначе - просит ввести другое значение
-long double aParameterValidation() {
+long double getParameterA() {
+    std::cout << "Enter parameter a: ";
     long double a;
-    std::cin >> a;
-    if (std::cin.fail() || std::cin.bad() || std::cin.peek() != '\n') {
-        std::cout << "Incorrect parameter a, please enter another one: ";
-        std::cin.clear(); // Возвращение потока ввода в начальное состояние
-        std::cin.ignore(32767, '\n'); // Очистка потока ввода
-        aParameterValidation();
+    bool check = true;
+    while (check) {
+        std::cin >> a;
+        if (std::cin.fail() || std::cin.bad() || std::cin.peek() != '\n') {
+            std::cout << "Incorrect parameter a, please enter another one: ";
+            std::cin.clear(); // Возвращение потока ввода в начальное состояние
+            std::cin.ignore(32767, '\n'); // Очистка потока ввода
+        }
+        else check = false;
     }
-    else {
-        std::cin.clear();
-        std::cin.ignore(32767, '\n');
-        return a;
-    }
+    return a;
 }
 
 // Функция, отвечающая за ввод и проверку на корректность ответа пользователя на вопрос о перезапуске
@@ -65,157 +56,101 @@ bool answerValidation() {
     }
 }
 
+iteration calculateIteration(std::vector<iteration>& v, int n, double x) {
+    iteration current_iteration;
+    int i = v.size() - 1;
+    current_iteration.tempAn = v[i].tempAn + (1. / n);
+    current_iteration.An = current_iteration.tempAn * std::pow(x, (n + 1)) / (n + 1); // Подсчет текущего элемента
+    current_iteration.Sn = v[i].Sn + current_iteration.An; // Подсчет текущей суммы
+    current_iteration.En = std::abs((current_iteration.tempAn + 1. / (n + 1)) * std::pow(x, (n + 2)) / (n + 2) / current_iteration.Sn); // Подсчет погрешности
+    v.push_back(current_iteration);
+    return current_iteration;
+}
+
+void printIteration(iteration& current_iteration, int n) {
+    std::cout << "n = " << std::setw(6) << n << " | An = " << std::setw(12) << current_iteration.An << " | Sn = " << std::setw(12) << 2 * current_iteration.Sn << " | En = " << std::setw(12) << current_iteration.En << std::endl;
+}
+
+void printHeader(bool f) {
+    if (f) std::cout << "The following values are taken from previous calculations.\n" << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
+    else std::cout << "The following values are new.\n" << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
+}
+
 int main()
 {
     bool exit_check = false;
-    std::vector<result> previous_iteration;
     double previous_x = -5;
+    std::vector<iteration> calculated_iterations;
     while (!exit_check) {
-
-        result current_iteration;
-
-        std::cout << "Enter parameter x: ";
-        double x = xParameterValidation();
+        iteration current_iteration;
+        double x = getParameterX();
         if (x == previous_x) {
-
-            std::cout << "Enter parameter a: ";
-            long double a = aParameterValidation();
-
+            long double a = getParameterA();
             if (a == long(a)) {
-                int size = previous_iteration.size();
+                int size = calculated_iterations.size();
                 if (a >= size) {
-
-
-                    std::cout << "The following values are taken from previous calculations.\n";
-                    std::cout << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
-                    for (int i = 0; i < size; ++i) {
-                        std::cout << "n = " << std::setw(6) << i+1 << " | An = " << std::setw(12) << previous_iteration[i].An
-                                  << " | Sn = " << std::setw(12) << 2 * previous_iteration[i].Sn << " | En = " << std::setw(12)
-                                  << previous_iteration[i].En << std::endl;
-                    }
-
-
-                    std::cout << "The following values are new.\n";
-                    std::cout << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
-                    current_iteration.tempAn = previous_iteration[size-1].tempAn;
-
-
-                    for (int n = size; n < a; ++n) {
-                        current_iteration.tempAn += (1. / n);
-                        current_iteration.An = current_iteration.tempAn * std::pow(x, (n + 1)) / (n + 1); // Подсчет текущего элемента
-                        current_iteration.Sn += current_iteration.An; // Подсчет текущей суммы
-                        current_iteration.En = std::abs((current_iteration.tempAn + 1. / (n + 1)) * std::pow(x, (n + 2)) / (n + 2) /
-                                                        current_iteration.Sn); // Подсчет погрешности
-                        previous_iteration.push_back(current_iteration);
-                        std::cout << "n = " << std::setw(6) << n+1 << " | An = " << std::setw(12) << current_iteration.An
-                                  << " | Sn = " << std::setw(12) << 2 * current_iteration.Sn << " | En = " << std::setw(12)
-                                  << current_iteration.En << std::endl;
-                    }
-                } else {
-                    std::cout << "The following values are taken from previous calculations.\n";
-                    std::cout << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
-                    for (int i = 0; i < a; ++i) {
-                        std::cout << "n = " << std::setw(6) << i+1 << " | An = " << std::setw(12) << previous_iteration[i].An
-                                  << " | Sn = " << std::setw(12) << 2 * previous_iteration[i].Sn << " | En = " << std::setw(12)
-                                  << previous_iteration[i].En << std::endl;
+                    printHeader(true);
+                    for (int i = 1; i < size; ++i) printIteration(calculated_iterations[i], i);
+                    printHeader(false);
+                    current_iteration.tempAn = calculated_iterations[size - 1].tempAn;
+                    for (int n = size; n - 1 < a; ++n) {
+                        current_iteration = calculateIteration(calculated_iterations, n, x);
+                        printIteration(current_iteration, n);
                     }
                 }
-
-
-
-            } else { // Старый параметр х и новый ДРОБНЫЙ параметр а
-                int size = previous_iteration.size();
-
-
-                if (previous_iteration[size-1].En >= a) { // Если введенная погрешность еще не достигнута
-
-                    std::cout << "The following values are taken from previous calculations.\n";
-                    std::cout << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
-
-
-                    for (int i = 0; i < size; ++i) {
-                        std::cout << "n = " << std::setw(6) << i+1 << " | An = " << std::setw(12) << previous_iteration[i].An
-                                  << " | Sn = " << std::setw(12) << 2 * previous_iteration[i].Sn << " | En = " << std::setw(12)
-                                  << previous_iteration[i].En << std::endl;
-                    }
-
-                    std::cout << "The following values are new.\n";
-                    std::cout << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
-                    current_iteration.tempAn = previous_iteration[size-1].tempAn;
-
-                    int n = size - 1;
-                    do {
-                        current_iteration.tempAn += (1. / n);
-                        current_iteration.An = current_iteration.tempAn * std::pow(x, (n + 1)) / (n + 1); // Подсчет текущего элемента
-                        current_iteration.Sn += current_iteration.An; // Подсчет текущей суммы
-                        current_iteration.En = std::abs((current_iteration.tempAn + 1. / (n + 1)) * std::pow(x, (n + 2)) / (n + 2) /
-                                                        current_iteration.Sn); // Подсчет погрешности
-                        previous_iteration.push_back(current_iteration);
-                        std::cout << "n = " << std::setw(6) << size+1 << " | An = " << std::setw(12) << current_iteration.An
-                                  << " | Sn = " << std::setw(12) << 2 * current_iteration.Sn << " | En = " << std::setw(12)
-                                  << current_iteration.En << std::endl;
-                        ++n;
-                    } while (previous_iteration[previous_iteration.size()-1].En >= a);
-
-
-                } else { // Если введенная погрешность уже посчитана
-
-                    std::cout << "The following values are taken from previous calculations.\n";
-                    std::cout << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
-
-                    int i = 0;
-                    do {
-                        std::cout << "n = " << std::setw(6) << i+1 << " | An = " << std::setw(12) << previous_iteration[i].An
-                                  << " | Sn = " << std::setw(12) << 2 * previous_iteration[i].Sn << " | En = " << std::setw(12)
-                                  << previous_iteration[i].En << std::endl;
-                        ++i;
-                    } while (previous_iteration[i-1].En >= a);
-
+                else {
+                    printHeader(true);
+                    for (int i = 1; i <= a; ++i) printIteration(calculated_iterations[i], i);
                 }
             }
-        }
-        else {
-            std::cout << "Enter parameter a: ";
-            long double a = aParameterValidation();
-
+            else { // Старый параметр х и новый ДРОБНЫЙ параметр а
+                int size = calculated_iterations.size();
+                if (calculated_iterations[size - 1].En >= a) { // Если введенная погрешность еще не достигнута
+                    printHeader(true);
+                    for (int i = 1; i < size; ++i) printIteration(calculated_iterations[i], i);
+                    printHeader(false);
+                    current_iteration.tempAn = calculated_iterations[size - 1].tempAn;
+                    int n = size;
+                    do {
+                        current_iteration = calculateIteration(calculated_iterations, n, x);
+                        printIteration(current_iteration, n);
+                        ++n;
+                    } while (calculated_iterations[calculated_iterations.size() - 1].En >= a);
+                }
+                else { // Если введенная погрешность уже посчитана
+                    printHeader(true);
+                    int i = 1;
+                    do {
+                        printIteration(calculated_iterations[i], i);
+                        ++i;
+                    } while (calculated_iterations[i - 1].En >= a);
+                }
+            }
+        } else {
+            calculated_iterations.clear();
+            iteration zero_iteration;
+            calculated_iterations.push_back(zero_iteration);
+            long double a = getParameterA();
             std::cout << "n" << std::setw(14) << "| An" << std::setw(20) << "| Sn" << std::setw(21) << " | En\n";
-
             // Если параметр a - количество итераций
             if (a == long(a)) {
                 for (int n = 1; n <= a; ++n) {
-                    current_iteration.tempAn += (1. / n);
-                    current_iteration.An = current_iteration.tempAn * std::pow(x, (n + 1)) / (n + 1); // Подсчет текущего элемента
-                    current_iteration.Sn += current_iteration.An; // Подсчет текущей суммы
-                    current_iteration.En = std::abs((current_iteration.tempAn + 1. / (n + 1)) * std::pow(x, (n + 2)) / (n + 2) /
-                                                    current_iteration.Sn); // Подсчет погрешности
-                    previous_iteration.push_back(current_iteration);
-                    std::cout << "n = " << std::setw(6) << n << " | An = " << std::setw(12) << current_iteration.An
-                              << " | Sn = " << std::setw(12) << 2 * current_iteration.Sn << " | En = " << std::setw(12)
-                              << current_iteration.En << std::endl;
+                    current_iteration = calculateIteration(calculated_iterations, n, x);
+                    printIteration(current_iteration, n);
                 }
             }
-                // Если параметр а - необходимая погрешность
-            else {
+            else { // Если параметр а - необходимая погрешность
                 int n = 1; // Номер элемента последовательности
                 do {
-                    current_iteration.tempAn += (1. / n);
-                    current_iteration.An = current_iteration.tempAn * std::pow(x, (n + 1)) / (n + 1); // Подсчет текущего элемента
-                    current_iteration.Sn += current_iteration.An; // Подсчет текущей суммы
-                    current_iteration.En = std::abs((current_iteration.tempAn + 1. / (n + 1)) * std::pow(x, (n + 2)) / (n + 2) /
-                                                    current_iteration.Sn); // Подсчет погрешности
-                    previous_iteration.push_back(current_iteration);
-                    std::cout << "n = " << std::setw(6) << n << " | An = " << std::setw(12) << current_iteration.An
-                              << " | Sn = " << std::setw(12) << 2 * current_iteration.Sn << " | En = " << std::setw(12)
-                              << current_iteration.En << std::endl;
+                    current_iteration = calculateIteration(calculated_iterations, n, x);
+                    printIteration(current_iteration, n);
                     ++n;
                 } while (current_iteration.En >= a);
             }
         }
         previous_x = x;
-
         // Вопрос о перезапуске программы
-        std::cout << "Do you want to use the program again?\n";
-        std::cout << "'0' = Yes\n'1' = No\n";
+        std::cout << "Do you want to use the program again?\n" << "'0' = Yes\n'1' = No\n";
         exit_check = answerValidation();
         std::cout << "\n\n";
     }
