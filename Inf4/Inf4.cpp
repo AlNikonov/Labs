@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 
+// 1 Вариант
+
 bool restartProgram() {
 	std::cout << "Do you want to use the program again? (Yes/No)\n";
 	std::cout << "Your answer: ";
@@ -23,7 +25,7 @@ std::string getCorrectFilename() {
 	while (true) {
 		std::string filename;
 		std::getline(std::cin, filename);
-		if (filename.find_first_of("+=[]:*?;«,/\\<>|") != std::string::npos || filename.find(".txt") != filename.length() - 4) {
+		if (filename.find_first_of("+=[]:*?;«,/\\<>|") != std::string::npos || filename.length() < 5 || filename.find(".txt") != filename.length() - 4) {
 			std::cout << "Incorrect filename, please enter another one: ";
 		}
 		else {
