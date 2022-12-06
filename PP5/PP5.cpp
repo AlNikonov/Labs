@@ -65,12 +65,20 @@ private:
 		return true;
 	}
 
-	// Проверка корректности времени
-	bool checkTime()
-	{
+	// Проверка корректности начального времени
+	bool checkStartTime() {
 		if (start_time.size() != 5 || !isdigit(start_time[0]) || !isdigit(start_time[1]) || start_time[2] != ':' || !isdigit(start_time[3]) || !isdigit(start_time[4])) {
 			return false;
 		}
+		int start_hour = std::stoi(start_time.substr(0, 2));
+		int start_minute = std::stoi(start_time.substr(3, 2));
+		if (start_hour < 0 || start_hour > 23 || start_minute < 0 || start_minute > 59) {
+			return false;
+		}
+	}
+
+	// Проверка корректности конечного времени
+	bool checkEndTime() {
 		if (end_time.size() != 5 || !isdigit(end_time[0]) || !isdigit(end_time[1]) || end_time[2] != ':' || !isdigit(end_time[3]) || !isdigit(end_time[4])) {
 			return false;
 		}
@@ -78,10 +86,7 @@ private:
 		int end_hour = std::stoi(end_time.substr(0, 2));
 		int start_minute = std::stoi(start_time.substr(3, 2));
 		int end_minute = std::stoi(end_time.substr(3, 2));
-		if (start_hour < 0 || start_hour>23 || end_hour < 0 || end_hour>23) {
-			return false;
-		}
-		if (start_minute < 0 || start_minute>59 || end_minute < 0 || end_minute>59) {
+		if (end_hour < 0 || end_hour > 23 || end_minute < 0 || end_minute > 59) {
 			return false;
 		}
 		if (start_hour > end_hour || (start_hour == end_hour && start_minute > end_minute)) {
@@ -167,13 +172,13 @@ std::istream& operator>>(std::istream& in, WorkTime& ref)
 		in.ignore(32767, '\n');
 	}
 	std::cout << "Input start time in format (hh:mm): ";
-	while (!(in >> ref.start_time) || in.peek() != '\n' || !ref.checkTime()) {
+	while (!(in >> ref.start_time) || in.peek() != '\n' || !ref.checkStartTime()) {
 		std::cout << "Incorrect time format. Enter start time again: ";
 		in.clear();
 		in.ignore(32767, '\n');
 	}
 	std::cout << "Input end time in format (hh:mm): ";
-	while (!(in >> ref.end_time) || in.peek() != '\n' || !ref.checkTime()) {
+	while (!(in >> ref.end_time) || in.peek() != '\n' || !ref.checkEndTime()) {
 		std::cout << "Incorrect time format. Enter end time again: ";
 		in.clear();
 		in.ignore(32767, '\n');
@@ -197,8 +202,10 @@ std::ifstream& operator>>(std::ifstream& in, WorkTime& ref)
 	if (!ref.checkDate()) {
 		ref.date = "01.01";
 	}
-	if (!ref.checkTime()) {
+	if (!ref.checkStartTime()) {
 		ref.start_time = "00:00";
+	}
+	if (!ref.checkEndTime()) {
 		ref.end_time = "23:59";
 	}
 	return in;
