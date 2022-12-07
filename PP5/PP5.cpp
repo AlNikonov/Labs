@@ -189,7 +189,7 @@ std::istream& operator>>(std::istream& in, WorkTime& ref)
 // Вывод в консоль
 std::ostream& operator<<(std::ostream& out, WorkTime& ref)
 {
-	out << ref.date << ' ' << ref.start_time << ' ' << ref.end_time << '\n';
+	out << ref.date << '\n' << ref.start_time << '\n' << ref.end_time << '\n';
 	return out;
 }
 
@@ -214,7 +214,7 @@ std::ifstream& operator>>(std::ifstream& in, WorkTime& ref)
 // Запись в файл
 std::ofstream& operator<<(std::ofstream& out, WorkTime& ref)
 {
-	out << ref.date << ' ' << ref.start_time << ' ' << ref.end_time << '\n';
+	out << ref.date << '\n' << ref.start_time << '\n' << ref.end_time;
 	return out;
 }
 
@@ -282,13 +282,13 @@ public:
 
 // Вывод в консоль
 std::ostream& operator<<(std::ostream& out, Worker& ref) {
-	out << ref.full_name << ' ' << ref.wage_rate << ' ' << ref.work_time;
+	out << ref.full_name << '\n' << ref.wage_rate << '\n' << ref.work_time;
 	return out;
 }
 
 // Вывод в файл
 std::ofstream& operator<<(std::ofstream& out, Worker& ref) {
-	out << ref.full_name << ' ' << ref.wage_rate << ' ' << ref.work_time;
+	out << ref.full_name << '\n' << ref.wage_rate << '\n' << ref.work_time;
 	return out;
 }
 
@@ -339,6 +339,12 @@ std::ifstream& operator>>(std::ifstream& in, Worker& ref) {
 		ref.wage_rate = 0;
 	}
 	in >> ref.work_time;
+	int cur_position = in.tellg();
+	std::getline(in, temp);
+	if (temp.substr(0, 6) == "Salary") {}
+	else {
+		in.seekg(cur_position, std::ios_base::beg);
+	}
 	return in;
 }
 
@@ -352,7 +358,7 @@ void outputInConsole(std::vector<Worker>& ref) {
 // Вывод в файл
 void outputInFile(std::ofstream& out, std::vector<Worker>& ref) {
 	for (Worker i : ref) {
-		out << i << "Salary: " << i.calculateSalary() << '\n';
+		out << '\n' << i << "Salary: " << i.calculateSalary();
 	}
 }
 
@@ -451,7 +457,7 @@ int main()
 			bool flag = true;
 			while (flag) {
 				try {
-					std::ofstream file(getCorrectFilename());
+					std::ofstream file(getCorrectFilename(), std::ios::app);
 					outputInFile(file, all_data);
 					flag = false;
 				}
